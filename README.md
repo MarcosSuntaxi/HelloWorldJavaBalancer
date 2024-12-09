@@ -31,10 +31,10 @@ A simple Node.js application that uses the Express framework to create a basic H
     http://localhost:8080
     
 ## Project Structure
-helloworldjavascriptbalancer/
-├── index.js         # Main application file
-├── package.json     #Project metadata and dependencies
-└── node_modules/    #Installed dependencies (auto-generated)
+    helloworldjavascriptbalancer/
+    ├── index.js         # Main application file
+    ├── package.json     #Project metadata and dependencies
+    └── node_modules/    #Installed dependencies (auto-generated)
 
 ## Author
 Marcos Suntaxi
