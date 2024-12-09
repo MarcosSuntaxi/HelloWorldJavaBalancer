@@ -18,20 +18,26 @@ A simple Node.js application that uses the Express framework to create a basic H
    cd helloworldjavascriptbalancer
 
 2. Install dependencies:
+    ```bash
     npm install
 
 ## Usage 
 1. Start the server:
+    ```bash
     node index.js
 
 2. Open your browser and navigate to:
+    ```bash
     http://localhost:8080
     
 ## Project Structure
 helloworldjavascriptbalancer/
-├── index.js         # Main application file
-├── package.json     # Project metadata and dependencies
-└── node_modules/    # Installed dependencies (auto-generated)
+├── index.js         
+# Main application file
+├── package.json     
+# Project metadata and dependencies
+└── node_modules/    
+# Installed dependencies (auto-generated)
 
 ## Author
 Marcos Suntaxi
