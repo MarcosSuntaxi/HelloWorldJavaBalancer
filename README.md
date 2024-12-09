@@ -33,11 +33,11 @@ A simple Node.js application that uses the Express framework to create a basic H
 ## Project Structure
 helloworldjavascriptbalancer/
 ├── index.js         
-# Main application file
+Main application file
 ├── package.json     
-# Project metadata and dependencies
+Project metadata and dependencies
 └── node_modules/    
-# Installed dependencies (auto-generated)
+Installed dependencies (auto-generated)
 
 ## Author
 Marcos Suntaxi
