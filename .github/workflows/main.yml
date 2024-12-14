@@ -27,25 +27,29 @@ jobs:
       - name: Deploy to EC2
         run: |
           ssh -i ~/.ssh/id_rsa ubuntu@ec2-54-81-81-82.compute-1.amazonaws.com << 'EOF'
-            # Navegar al directorio del proyecto
+            # Preparar la instancia
+            sudo apt-get update
+            sudo apt-get install -y git nodejs npm
+            sudo npm install -g pm2
+
+            # Clonar el repositorio si no existe
+            if [ ! -d "/home/ubuntu/HelloWorldJavaBalancer" ]; then
+                git clone <URL_DEL_REPOSITORIO> /home/ubuntu/HelloWorldJavaBalancer
+            fi
             cd /home/ubuntu/HelloWorldJavaBalancer
+
             # Asegurarse de tener los últimos cambios
             git fetch origin
-            git reset --hard origin/main  # Esto asegura que no haya cambios no deseados
-
-            # Verificar el estado del repositorio
-            git status
+            git reset --hard origin/main
 
             # Instalar dependencias de npm
             npm install
 
             # Usar PM2 para iniciar/reiniciar el servidor
-            pm2 stop HelloWorldJavaBalancer || true  # Detener la aplicación si está corriendo
-            pm2 start index.js --name "HelloWorldJavaBalancer" || pm2 restart "HelloWorldJavaBalancer"
-            
-            # Guardar los cambios en PM2
+            pm2 stop HelloWorldJavaBalancer || true
+            pm2 start index.js --name "HelloWorldJavaBalancer"
             pm2 save
 
-            # Asegurarse de que el servidor esté en ejecución
+            # Verificar que el servidor esté ejecutándose
             pm2 list
           EOF
