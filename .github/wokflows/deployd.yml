@@ -1,4 +1,4 @@
-name: Build and Push Docker Images
+name: Deploy to EC2
 
 on:
   push:
@@ -6,63 +6,46 @@ on:
       - main
 
 jobs:
-  build-and-push:
-    name: Build and Push Docker Images
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-
-      - name: Build and push hello-service
-        run: |
-          docker build ./ -f ./Dockerfile -t ${{ secrets.DOCKER_HUB_USERNAME }}/hello-service:latest
-          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/hello-service:latest
-
   deploy:
-    name: Deploy to AWS EC2
+    name: Deploy to EC2
     runs-on: ubuntu-latest
-    needs: build-and-push
-    if: ${{ needs.build-and-push.result == 'success' }}
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      # Checkout del código fuente
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: Setup SSH Key
+      # Configurar el acceso SSH
+      - name: Set up SSH
         run: |
-          echo "${{ secrets.EC2_SSH_KEY }}" > private.pem
-          chmod 600 private.pem
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ec2-54-81-81-82.compute-1.amazonaws.com >> ~/.ssh/known_hosts
 
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v0.1.6
-        with:
-          host: ${{ secrets.EC2_PUBLIC_IP }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
-          script: |
-            if ! [ -x "$(command -v docker)" ]; then
-              sudo apt-get update
-              sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
-              curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-              sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-              sudo apt-get update
-              sudo apt-get install -y docker-ce
-              sudo usermod -aG docker $USER
-            fi
+      # Desplegar el código en la instancia EC2
+      - name: Deploy to EC2
+        run: |
+          ssh -i ~/.ssh/id_rsa ubuntu@ec2-54-81-81-82.compute-1.amazonaws.com << 'EOF'
+            # Navegar al directorio del proyecto
+            cd /home/ubuntu/project2.25-11-2024
+            # Asegurarse de tener los últimos cambios
+            git fetch origin
+            git reset --hard origin/main  # Esto asegura que no haya cambios no deseados
 
-            sudo docker stop $(sudo docker ps -q) || true
-            sudo docker rm $(sudo docker ps -aq) || true
+            # Verificar el estado del repositorio
+            git status
 
-            sudo docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/hello-service:latest
+            # Instalar dependencias de npm
+            npm install
 
-            sudo docker run -d --name hello-service -p 8081:8080 ${{ secrets.DOCKER_HUB_USERNAME }}/hello-service:latest
+            # Usar PM2 para iniciar/reiniciar el servidor
+            pm2 stop project2.25-11-2024 || true  # Detener la aplicación si está corriendo
+            pm2 start index.js --name "project2.25-11-2024" || pm2 restart "project2.25-11-2024"
+            
+            # Guardar los cambios en PM2
+            pm2 save
 
-            sudo docker image prune -af
+            # Asegurarse de que el servidor esté en ejecución
+            pm2 list
+          EOF
