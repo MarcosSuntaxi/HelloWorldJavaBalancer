@@ -28,7 +28,7 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_rsa ubuntu@ec2-54-81-81-82.compute-1.amazonaws.com << 'EOF'
             # Navegar al directorio del proyecto
-            cd /home/ubuntu/project2.25-11-2024
+            cd /home/ubuntu/HelloWorldJavaBalancer
             # Asegurarse de tener los últimos cambios
             git fetch origin
             git reset --hard origin/main  # Esto asegura que no haya cambios no deseados
@@ -40,8 +40,8 @@ jobs:
             npm install
 
             # Usar PM2 para iniciar/reiniciar el servidor
-            pm2 stop project2.25-11-2024 || true  # Detener la aplicación si está corriendo
-            pm2 start index.js --name "project2.25-11-2024" || pm2 restart "project2.25-11-2024"
+            pm2 stop HelloWorldJavaBalancer || true  # Detener la aplicación si está corriendo
+            pm2 start index.js --name "HelloWorldJavaBalancer" || pm2 restart "HelloWorldJavaBalancer"
             
             # Guardar los cambios en PM2
             pm2 save
