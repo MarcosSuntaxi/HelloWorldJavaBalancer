@@ -28,22 +28,38 @@ jobs:
       - name: Deploy to EC2 - Instance 1
         run: |
           ssh -i ~/.ssh/id_rsa ubuntu@ec2-52-90-38-140.compute-1.amazonaws.com << 'EOF'
+            # Crear la carpeta del proyecto si no existe
+            mkdir -p /home/ubuntu/HelloWorldJavaBalancer
+
+            # Instalar dependencias si no están presentes
+            if ! command -v npm &> /dev/null; then
+              sudo apt update
+              sudo apt install -y nodejs npm
+            fi
+
+            if ! command -v pm2 &> /dev/null; then
+              sudo npm install -g pm2
+            fi
+
             # Navegar al directorio del proyecto
-            cd /home/ubuntu/HelloWorldJavaBalancer
+            cd /home/ubuntu/HelloWorldJavaBalancer || exit
+
+            # Clonar el repositorio si no está inicializado
+            if [ ! -d .git ]; then
+              git clone https://github.com/tuusuario/tu-repo.git .
+            fi
+
             # Asegurarse de tener los últimos cambios
             git fetch origin
-            git reset --hard origin/main  # Esto asegura que no haya cambios no deseados
-
-            # Verificar el estado del repositorio
-            git status
+            git reset --hard origin/main
 
             # Instalar dependencias de npm
             npm install
 
             # Usar PM2 para iniciar/reiniciar el servidor
-            pm2 stop HelloWorldJavaBalancer || true  # Detener la aplicación si está corriendo
+            pm2 stop HelloWorldJavaBalancer || true
             pm2 start index.js --name "HelloWorldJavaBalancer" || pm2 restart "HelloWorldJavaBalancer"
-            
+
             # Guardar los cambios en PM2
             pm2 save
 
@@ -55,22 +71,38 @@ jobs:
       - name: Deploy to EC2 - Instance 2
         run: |
           ssh -i ~/.ssh/id_rsa ubuntu@ec2-54-224-139-45.compute-1.amazonaws.com << 'EOF'
+            # Crear la carpeta del proyecto si no existe
+            mkdir -p /home/ubuntu/HelloWorldJavaBalancer
+
+            # Instalar dependencias si no están presentes
+            if ! command -v npm &> /dev/null; then
+              sudo apt update
+              sudo apt install -y nodejs npm
+            fi
+
+            if ! command -v pm2 &> /dev/null; then
+              sudo npm install -g pm2
+            fi
+
             # Navegar al directorio del proyecto
-            cd /home/ubuntu/HelloWorldJavaBalancer
+            cd /home/ubuntu/HelloWorldJavaBalancer || exit
+
+            # Clonar el repositorio si no está inicializado
+            if [ ! -d .git ]; then
+              git clone https://github.com/tuusuario/tu-repo.git .
+            fi
+
             # Asegurarse de tener los últimos cambios
             git fetch origin
-            git reset --hard origin/main  # Esto asegura que no haya cambios no deseados
-
-            # Verificar el estado del repositorio
-            git status
+            git reset --hard origin/main
 
             # Instalar dependencias de npm
             npm install
 
             # Usar PM2 para iniciar/reiniciar el servidor
-            pm2 stop HelloWorldJavaBalancer || true  # Detener la aplicación si está corriendo
+            pm2 stop HelloWorldJavaBalancer || true
             pm2 start index.js --name "HelloWorldJavaBalancer" || pm2 restart "HelloWorldJavaBalancer"
-            
+
             # Guardar los cambios en PM2
             pm2 save
 
