@@ -28,6 +28,8 @@ jobs:
       - name: Deploy to EC2 - Instance 1
         run: |
           ssh -i ~/.ssh/id_rsa ubuntu@ec2-52-90-38-140.compute-1.amazonaws.com << 'EOF'
+            set -e
+
             # Crear la carpeta del proyecto si no existe
             mkdir -p /home/ubuntu/HelloWorldJavaBalancer
 
@@ -42,7 +44,7 @@ jobs:
             fi
 
             # Navegar al directorio del proyecto
-            cd /home/ubuntu/HelloWorldJavaBalancer || exit
+            cd /home/ubuntu/HelloWorldJavaBalancer
 
             # Clonar el repositorio si no está inicializado
             if [ ! -d .git ]; then
@@ -53,12 +55,18 @@ jobs:
             git fetch origin
             git reset --hard origin/main
 
+            # Verificar que `index.js` y `package.json` existan
+            if [ ! -f index.js ] || [ ! -f package.json ]; then
+              echo "ERROR: index.js o package.json no encontrados. Verifica tu repositorio."
+              exit 1
+            fi
+
             # Instalar dependencias de npm
             npm install
 
             # Usar PM2 para iniciar/reiniciar el servidor
             pm2 stop HelloWorldJavaBalancer || true
-            pm2 start index.js --name "HelloWorldJavaBalancer" || pm2 restart "HelloWorldJavaBalancer"
+            pm2 start index.js --name "HelloWorldJavaBalancer"
 
             # Guardar los cambios en PM2
             pm2 save
@@ -71,6 +79,8 @@ jobs:
       - name: Deploy to EC2 - Instance 2
         run: |
           ssh -i ~/.ssh/id_rsa ubuntu@ec2-54-224-139-45.compute-1.amazonaws.com << 'EOF'
+            set -e
+
             # Crear la carpeta del proyecto si no existe
             mkdir -p /home/ubuntu/HelloWorldJavaBalancer
 
@@ -85,7 +95,7 @@ jobs:
             fi
 
             # Navegar al directorio del proyecto
-            cd /home/ubuntu/HelloWorldJavaBalancer || exit
+            cd /home/ubuntu/HelloWorldJavaBalancer
 
             # Clonar el repositorio si no está inicializado
             if [ ! -d .git ]; then
@@ -96,12 +106,18 @@ jobs:
             git fetch origin
             git reset --hard origin/main
 
+            # Verificar que `index.js` y `package.json` existan
+            if [ ! -f index.js ] || [ ! -f package.json ]; then
+              echo "ERROR: index.js o package.json no encontrados. Verifica tu repositorio."
+              exit 1
+            fi
+
             # Instalar dependencias de npm
             npm install
 
             # Usar PM2 para iniciar/reiniciar el servidor
             pm2 stop HelloWorldJavaBalancer || true
-            pm2 start index.js --name "HelloWorldJavaBalancer" || pm2 restart "HelloWorldJavaBalancer"
+            pm2 start index.js --name "HelloWorldJavaBalancer"
 
             # Guardar los cambios en PM2
             pm2 save
