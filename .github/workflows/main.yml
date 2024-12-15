@@ -46,14 +46,18 @@ jobs:
             # Navegar al directorio del proyecto
             cd /home/ubuntu/HelloWorldJavaBalancer
 
-            # Clonar el repositorio si no está inicializado
-            if [ ! -d .git ]; then
+            # Verificar si el repositorio ya está clonado
+            if [ -d .git ]; then
+              # Si el repositorio ya existe, actualizar los cambios
+              git reset --hard
+              git clean -fd
+              git fetch origin
+              git checkout main
+              git pull origin main
+            else
+              # Si no existe, clonar el repositorio
               git clone https://github.com/tuusuario/tu-repo.git .
             fi
-
-            # Asegurarse de tener los últimos cambios
-            git fetch origin
-            git reset --hard origin/main
 
             # Verificar que `index.js` y `package.json` existan
             if [ ! -f index.js ] || [ ! -f package.json ]; then
@@ -97,14 +101,18 @@ jobs:
             # Navegar al directorio del proyecto
             cd /home/ubuntu/HelloWorldJavaBalancer
 
-            # Clonar el repositorio si no está inicializado
-            if [ ! -d .git ]; then
+            # Verificar si el repositorio ya está clonado
+            if [ -d .git ]; then
+              # Si el repositorio ya existe, actualizar los cambios
+              git reset --hard
+              git clean -fd
+              git fetch origin
+              git checkout main
+              git pull origin main
+            else
+              # Si no existe, clonar el repositorio
               git clone https://github.com/tuusuario/tu-repo.git .
             fi
-
-            # Asegurarse de tener los últimos cambios
-            git fetch origin
-            git reset --hard origin/main
 
             # Verificar que `index.js` y `package.json` existan
             if [ ! -f index.js ] || [ ! -f package.json ]; then
