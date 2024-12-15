@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+    
 
 jobs:
   deploy:
@@ -22,111 +23,27 @@ jobs:
           echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ec2-52-90-38-140.compute-1.amazonaws.com >> ~/.ssh/known_hosts
-          ssh-keyscan -H ec2-54-224-139-45.compute-1.amazonaws.com >> ~/.ssh/known_hosts
 
-      # Desplegar el código en la primera instancia EC2
-      - name: Deploy to EC2 - Instance 1
+      # Desplegar el código en la instancia EC2
+      - name: Deploy to EC2
         run: |
           ssh -i ~/.ssh/id_rsa ubuntu@ec2-52-90-38-140.compute-1.amazonaws.com << 'EOF'
-            set -e
-
-            # Crear la carpeta del proyecto si no existe
-            mkdir -p /home/ubuntu/HelloWorldJavaBalancer
-
-            # Instalar dependencias si no están presentes
-            if ! command -v npm &> /dev/null; then
-              sudo apt update
-              sudo apt install -y nodejs npm
-            fi
-
-            if ! command -v pm2 &> /dev/null; then
-              sudo npm install -g pm2
-            fi
-
             # Navegar al directorio del proyecto
             cd /home/ubuntu/HelloWorldJavaBalancer
+            # Asegurarse de tener los últimos cambios
+            git fetch origin
+            git reset --hard origin/main  # Esto asegura que no haya cambios no deseados
 
-            # Verificar si el repositorio ya está clonado
-            if [ -d .git ]; then
-              # Si el repositorio ya existe, actualizar los cambios
-              git reset --hard
-              git clean -fd
-              git fetch origin
-              git checkout main
-              git pull origin main
-            else
-              # Si no existe, clonar el repositorio
-              git clone https://github.com/tuusuario/tu-repo.git .
-            fi
-
-            # Verificar que `index.js` y `package.json` existan
-            if [ ! -f index.js ] || [ ! -f package.json ]; then
-              echo "ERROR: index.js o package.json no encontrados. Verifica tu repositorio."
-              exit 1
-            fi
+            # Verificar el estado del repositorio
+            git status
 
             # Instalar dependencias de npm
             npm install
 
             # Usar PM2 para iniciar/reiniciar el servidor
-            pm2 stop HelloWorldJavaBalancer || true
-            pm2 start index.js --name "HelloWorldJavaBalancer"
-
-            # Guardar los cambios en PM2
-            pm2 save
-
-            # Asegurarse de que el servidor esté en ejecución
-            pm2 list
-          EOF
-
-      # Desplegar el código en la segunda instancia EC2
-      - name: Deploy to EC2 - Instance 2
-        run: |
-          ssh -i ~/.ssh/id_rsa ubuntu@ec2-54-224-139-45.compute-1.amazonaws.com << 'EOF'
-            set -e
-
-            # Crear la carpeta del proyecto si no existe
-            mkdir -p /home/ubuntu/HelloWorldJavaBalancer
-
-            # Instalar dependencias si no están presentes
-            if ! command -v npm &> /dev/null; then
-              sudo apt update
-              sudo apt install -y nodejs npm
-            fi
-
-            if ! command -v pm2 &> /dev/null; then
-              sudo npm install -g pm2
-            fi
-
-            # Navegar al directorio del proyecto
-            cd /home/ubuntu/HelloWorldJavaBalancer
-
-            # Verificar si el repositorio ya está clonado
-            if [ -d .git ]; then
-              # Si el repositorio ya existe, actualizar los cambios
-              git reset --hard
-              git clean -fd
-              git fetch origin
-              git checkout main
-              git pull origin main
-            else
-              # Si no existe, clonar el repositorio
-              git clone https://github.com/tuusuario/tu-repo.git .
-            fi
-
-            # Verificar que `index.js` y `package.json` existan
-            if [ ! -f index.js ] || [ ! -f package.json ]; then
-              echo "ERROR: index.js o package.json no encontrados. Verifica tu repositorio."
-              exit 1
-            fi
-
-            # Instalar dependencias de npm
-            npm install
-
-            # Usar PM2 para iniciar/reiniciar el servidor
-            pm2 stop HelloWorldJavaBalancer || true
-            pm2 start index.js --name "HelloWorldJavaBalancer"
-
+            pm2 stop HelloWorldJavaBalancer || true  # Detener la aplicación si está corriendo
+            pm2 start index.js --name "HelloWorldJavaBalancer" || pm2 restart "HelloWorldJavaBalancer"
+            
             # Guardar los cambios en PM2
             pm2 save
 
